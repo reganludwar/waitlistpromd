@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Waitlist Entry Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    label {
+      display: block;
+      margin: 10px 0 4px;
+    }
+    input, select {
+      width: 100%;
+      padding: 6px;
+      margin-bottom: 12px;
+    }
+    fieldset {
+      border: none;
+      margin: 12px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Add to Waitlist</h1>
+
+  <form id="waitlist-form">
+    <label for="first_name">First Name</label>
+    <input type="text" name="first_name" required />
+
+    <label for="middle_initial">Middle Initial</label>
+    <input type="text" name="middle_initial" maxlength="1" />
+
+    <label for="last_name">Last Name</label>
+    <input type="text" name="last_name" required />
+
+    <label for="year_of_birth">Year of Birth</label>
+    <input type="number" name="year_of_birth" min="1900" max="2099" />
+
+    <label for="cell_number">Cell Number</label>
+    <input type="text" name="cell_number" required />
+
+    <label for="appointment_type">Appointment Type</label>
+    <select name="appointment_type" required>
+      <option value="Standard">Standard</option>
+      <option value="Follow-Up">Follow-Up</option>
+      <option value="Results">Results</option>
+    </select>
+
+    <label for="urgency">Urgency</label>
+    <select name="urgency" required>
+      <option value="standard">Standard</option>
+      <option value="flexible">Flexible</option>
+      <option value="urgent">Urgent</option>
+    </select>
+
+    <label for="preferred_times">Preferred Time of Day</label>
+    <select name="preferred_times" required>
+      <option value="any">Any</option>
+      <option value="early morning">Early Morning</option>
+      <option value="morning">Morning</option>
+      <option value="afternoon">Afternoon</option>
+      <option value="evening">Evening</option>
+      <option value="late evening">Late Evening</option>
+    </select>
+
+    <fieldset>
+      <legend>Preferred Days</legend>
+      <label><input type="checkbox" name="preferred_days" value="any" checked> Any</label>
+      <label><input type="checkbox" name="preferred_days" value="monday"> Monday</label>
+      <label><input type="checkbox" name="preferred_days" value="tuesday"> Tuesday</label>
+      <label><input type="checkbox" name="preferred_days" value="wednesday"> Wednesday</label>
+      <label><input type="checkbox" name="preferred_days" value="thursday"> Thursday</label>
+      <label><input type="checkbox" name="preferred_days" value="friday"> Friday</label>
+      <label><input type="checkbox" name="preferred_days" value="saturday"> Saturday</label>
+      <label><input type="checkbox" name="preferred_days" value="sunday"> Sunday</label>
+      <label><input type="checkbox" name="preferred_days" value="weekdays"> Weekdays</label>
+      <label><input type="checkbox" name="preferred_days" value="weekends"> Weekends</label>
+    </fieldset>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <!-- 🧠 Load Supabase + form logic -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.6/+esm" type="module"></script>
+  <script type="module">
+    import { SUPABASE_URL, SUPABASE_ANON_KEY } from './env.js';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    document.getElementById('waitlist-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const form = e.target;
+
+      const data = {
+        first_name: form.first_name.value.trim(),
+        middle_initial: form.middle_initial.value.trim() || null,
+        last_name: form.last_name.value.trim(),
+        year_of_birth: form.year_of_birth.value ? parseInt(form.year_of_birth.value) : null,
+        cell_number: form.cell_number.value.trim(),
+        appointment_type: form.appointment_type.value,
+        urgency: form.urgency.value,
+        preferred_times: form.preferred_times.value,
+        preferred_days: Array.from(form.querySelectorAll('input[name="preferred_days"]:checked')).map(cb => cb.value)
+      };
+
+      const { error } = await supabase.from('waitlist').insert([data]);
+
+      if (error) {
+        alert('Error adding to waitlist: ' + error.message);
+      } else {
+        alert('Successfully added to waitlist!');
+        form.reset();
+      }
+    });
+  </script>
+</body>
+</html>
